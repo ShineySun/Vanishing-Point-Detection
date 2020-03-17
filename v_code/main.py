@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import os
 from operator import itemgetter
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from clustering import clustering
 
 # data folder
 path_dir = "../v_data"
@@ -32,9 +35,49 @@ threshold = 50
 # minLineLength -> height / 2
 minLineLength = 50
 maxLineGap = 50
+numPointRank = 100
 
 # Distance Minimum
 dist_threshold = 70
+
+def plot_circle(VD3D):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.set_aspect('equal')
+
+    u = np.linspace(0,2*np.pi, 100)
+    # u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+
+    x = 1 * np.outer(np.cos(u), np.sin(v))
+    y = 1 * np.outer(np.sin(u), np.sin(v))
+    z = 1 * np.outer(np.ones(np.size(u)), np.cos(v))
+    #for i in range(2):
+    #    ax.plot_surface(x+random.randint(-5,5), y+random.randint(-5,5), z+random.randint(-5,5),  rstride=4, cstride=4, color='b', linewidth=0, alpha=0.5)
+    elev = 1.0
+    rot = 1.0 / 180 * np.pi
+    ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='y', linewidth=0, alpha=0.5)
+    #calculate vectors for "vertical" circle
+    a = np.array([-np.sin(elev / 180 * np.pi), 0, np.cos(elev / 180 * np.pi)])
+    # a = np.array([-VD3D[0][0], -VD3D[0][1], -VD3D[0][2]])
+    # b = np.array([0, 1, 0])
+    b = np.array([VD3D[0][0], VD3D[0][1], VD3D[0][2]])
+    b = b * np.cos(rot) + np.cross(a, b) * np.sin(rot) + a * np.dot(a, b) * (1 - np.cos(rot))
+    #ax.plot(np.sin(u),np.cos(u),0,color='k', linestyle = 'dashed')
+    horiz_front = np.linspace(0, np.pi, 100)
+    #ax.plot(np.sin(VD3D[0][0]),np.cos(VD3D[0][1]),VD3D[0][2],color='k')
+    vert_front = np.linspace(np.pi / 2, 3 * np.pi / 2, 100)
+    #ax.plot(a[0] * np.sin(u) + b[0] * np.cos(u), b[1] * np.cos(u), a[2] * np.sin(u) + b[2] * np.cos(u),color='k', linestyle = 'dashed')
+    # ax.plot(b[0] * np.sin(u), b[1] * np.cos(u), b[2] * np.cos(u),color='k', linestyle = 'dashed')
+    #ax.plot(a[0] * np.sin(vert_front) + b[0] * np.cos(vert_front), b[1] * np.cos(vert_front), a[2] * np.sin(vert_front) + b[2] * np.cos(vert_front),color='k')
+
+    for VD3D_tmp in VD3D:
+        ax.scatter(VD3D_tmp[0], VD3D_tmp[1], VD3D_tmp[2], color="r", s=20)
+
+    ax.view_init(elev = elev, azim = 0)
+
+
+    plt.show()
 
 # Distance Calculator
 def dist_calc(line):
@@ -166,29 +209,85 @@ for x in range(num_list):
 
     VP = []
 
-    # chane (candidate) vanishing direction 3-d to (candidate) vanishing points (2-d)
+    # change (candidate) vanishing direction 3-d to (candidate) vanishing points (2-d)
     for i in range(len(VD3D)):
         tmp_vp = np.matmul(camera_vec,VD3D[i].transpose())
         tmp_vp = tmp_vp/VD3D[i][2]
 
-        if tmp_vp[0] > img_size_x or tmp_vp[1] > img_size_y:
-            continue
+        if (tmp_vp[0] >= 0 and tmp_vp[0] <= img_size_x) or (tmp_vp[1] >= img_size_y and tmp_vp[1] <= img_size_y):
+           cv2.circle(rgb_img, (int(tmp_vp[0]),int(tmp_vp[1])),3,(0,0,255),-1)
 
         #print(i , " : ", tmp_vp)
         VP.append(tmp_vp)
 
-        cv2.circle(rgb_img, (int(tmp_vp[0]),int(tmp_vp[1])),3,(0,0,255),-1)
+        #cv2.circle(rgb_img, (int(tmp_vp[0]),int(tmp_vp[1])),3,(0,0,255),-1)
 
+
+    #print(VD3D)
 
     # make score for each candidate vanishing points
     score_matrix = np.zeros((len(VD3D),len(VD3D)))
 
-    print(len(VD3D))
-    print(score_matrix)
+    #print(score_matrix.shape)
+    #print(VP)
 
-    # for i in range(len(VD3D)):
-    #     for j in range(i,len(VD3D)):
-    #         dist =
+    #[103.88763198, 146.3627451 ,   1.        ]
+    #[-262.90243902,  -74.68292683,    1.        ]
+    # 428.2478
+
+
+    for i in range(len(VD3D)):
+        for j in range(i+1,len(VD3D)):
+
+            # print(i, " : ", VP[i][:2])
+            # print(j, " : ", VP[j][:2])
+            dist = np.linalg.norm(VP[i][:2]-VP[j][:2],2)
+            # print(dist)
+
+            if dist < 1:
+                dist = 1
+
+            score_matrix[i][j] = 1/dist
+            score_matrix[j][i] = score_matrix[i][j]
+
+    # score_vector = sum(score_matrix)/sum(sum(sum(score_matrix)))
+    sum_score_matrix = score_matrix.sum(axis = 1)
+    sum_score_vector = sum_score_matrix.sum()
+
+    score_vector = sum_score_matrix/sum_score_vector
+
+    #print(score_vector.shape)
+
+    #print(score_vector)
+
+    sorted_score_vector = np.sort(score_vector)[::-1]
+
+    score_idx = []
+
+    for i in range(len(sorted_score_vector)):
+        tmp_index = np.where(score_vector == sorted_score_vector[i])
+        #print(tmp_index[0][0])
+        score_idx.append(tmp_index[0][0])
+    #print(score_idx)
+    # print(sorted_score_vector)
+    #print(score_matrix)
+
+    # extract top N candidate vanishing points
+    if len(VP) < numPointRank:
+        numPointRank = len(VP)
+
+    topN_VP = []
+
+    for i in range(numPointRank):
+        topN_VP.append(VP[score_idx[i]][0:2])
+        print(topN_VP[i])
+    # print(topN_VP)
+
+
+
+    a = clustering(topN_VP)
+    #
+
 
 
 
@@ -212,9 +311,9 @@ for x in range(num_list):
 
         #cv2.waitKey(300000)
 
-
-    cv2.imshow("RGB",rgb_img)
+    cv2.imshow("CANNY", rgb_img)
     cv2.imshow("LINE",line_img)
-    #cv2.imshow("CANNY",edges)
+    plot_circle(VD3D)
+
 
     cv2.waitKey(300000)

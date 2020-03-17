@@ -23,10 +23,10 @@ b = np.array([0, 1, 0])
 b = b * np.cos(rot) + np.cross(a, b) * np.sin(rot) + a * np.dot(a, b) * (1 - np.cos(rot))
 ax.plot(np.sin(u),np.cos(u),0,color='k', linestyle = 'dashed')
 horiz_front = np.linspace(0, np.pi, 100)
-ax.plot(np.sin(horiz_front),np.cos(horiz_front),0,color='k')
+#ax.plot(np.sin(horiz_front),np.cos(horiz_front),0,color='k')
 vert_front = np.linspace(np.pi / 2, 3 * np.pi / 2, 100)
-ax.plot(a[0] * np.sin(u) + b[0] * np.cos(u), b[1] * np.cos(u), a[2] * np.sin(u) + b[2] * np.cos(u),color='k', linestyle = 'dashed')
-ax.plot(a[0] * np.sin(vert_front) + b[0] * np.cos(vert_front), b[1] * np.cos(vert_front), a[2] * np.sin(vert_front) + b[2] * np.cos(vert_front),color='k')
+#ax.plot(a[0] * np.sin(u) + b[0] * np.cos(u), b[1] * np.cos(u), a[2] * np.sin(u) + b[2] * np.cos(u),color='k', linestyle = 'dashed')
+#ax.plot(a[0] * np.sin(vert_front) + b[0] * np.cos(vert_front), b[1] * np.cos(vert_front), a[2] * np.sin(vert_front) + b[2] * np.cos(vert_front),color='k')
 
 ax.view_init(elev = elev, azim = 0)
 
