@@ -1,1 +1,3 @@
 *.pyc
+
+LSTM/LSTM/.ipynb_checkpoints/*
