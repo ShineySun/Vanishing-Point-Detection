@@ -286,6 +286,8 @@ for x in range(num_list):
 
 
     a = clustering(topN_VP)
+
+    print("a", a)
     #
 
 
@@ -313,7 +315,7 @@ for x in range(num_list):
 
     cv2.imshow("CANNY", rgb_img)
     cv2.imshow("LINE",line_img)
-    plot_circle(VD3D)
+    #plot_circle(VD3D)
 
 
     cv2.waitKey(300000)
