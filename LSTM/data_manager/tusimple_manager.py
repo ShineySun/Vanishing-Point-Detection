@@ -1,4 +1,5 @@
 import json
+import numpy as np
 
 # Tusimple Dataset Management Tool
 class Tusimple_Manager(object):
@@ -166,6 +167,19 @@ class Tusimple_Manager(object):
         else:
             print("OPTION(0, 1, 2, 3, 4, 5, 6) IS REQUIRED")
             return None, None
+
+
+    def get_lanes(self, raw_data):
+        # Define return list
+        lanes = []
+        # extract lanes
+        for lane_idx, lane_x_points in enumerate(raw_data['lanes'], 0):
+            vertices = list(filter(lambda xy_pair : xy_pair[0] > 0, zip(lane_x_points, raw_data['h_samples'])))
+            vertices = np.array(vertices, dtype=np.float)
+            lanes.append(np.flip(vertices, axis=0))
+
+        return lanes
+
 
 
 
