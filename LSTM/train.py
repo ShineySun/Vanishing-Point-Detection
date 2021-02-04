@@ -11,7 +11,7 @@ import os
 import vis_util
 
 import monospline as mnsp
-from scipy.interpolate import CubicSpline
+import interpolation
 
 def main():
     # Select GPU
@@ -28,11 +28,12 @@ def main():
     dataset.tusimple_load_from_json()
     dataset.tusimple_split_instance()
 
-    two_train_data, two_test_data = dataset.get_instance(option = 3)
+    two_train_data, two_test_data = dataset.get_instance(option = 0)
 
     for idx, train_data in enumerate(two_train_data):
         # image clip directory
         clip_dir = dataset.train_path + train_data['raw_file']
+        print("* clip dir : {}".format(clip_dir))
         # load image
         raw_image = cv2.imread(clip_dir)
 
@@ -43,52 +44,45 @@ def main():
         annot_image = raw_image.copy()
         annot_image = vis_util.draw_points(annot_image, lanes)
 
-        # monospline
-        intrp_image = raw_image.copy()
+        # cubic spline interpolation
+        cubic_spline_image = raw_image.copy()
 
-        intrp_point_set = []
+        cubic_spline_sets = interpolation.cubic_spline(lanes)
 
-        for lane in lanes:
-            # print(lane)
-            lane = np.flip(lane, axis=0)
-            # print(lane)
+        cubic_spline_image = vis_util.draw_points(cubic_spline_image, cubic_spline_sets)
 
-            # y points -> x axis
-            x = lane[:,1]
-            # x points -> y axis
-            y = lane[:,0]
+        # mono spline interpolation
+        mono_spline_image = raw_image.copy()
 
-            # intrp = mnsp.monospline(x,y)
+        mono_spline_sets = interpolation.mono_spline(lanes)
 
-            intrp = CubicSpline(x,y)
+        mono_spline_image = vis_util.draw_points(mono_spline_image, mono_spline_sets)
 
-            x_intrp = np.linspace(720, 250, 100)
-            # y_intrp = intrp.evaluate(x_intrp)
-            y_intrp = intrp(x_intrp)
+        # linear interpolation
+        linear_intrp_image = raw_image.copy()
 
-            points_intrp = np.array(list(zip(y_intrp, x_intrp)))
+        linear_intrp_sets = interpolation.linear_interpolate(lanes)
 
-            intrp_point_set.append(points_intrp)
+        linear_intrp_image = vis_util.draw_points(linear_intrp_image, linear_intrp_sets)
 
+        # quadratic interpolation
+        quadratic_intrp_image = raw_image.copy()
 
-        intrp_image = vis_util.draw_points(intrp_image, intrp_point_set)
+        quadratic_intrp_sets = interpolation.quadratic_interpolate(lanes)
+
+        quadratic_intrp_image = vis_util.draw_points(quadratic_intrp_image, quadratic_intrp_sets)
 
 
 
 
 
-        cv2.imshow("raw_image", raw_image)
-        cv2.imshow("annot_image", annot_image)
-        cv2.imshow("intrp_image", intrp_image)
+        # cv2.imshow("raw_image", raw_image)
+        # cv2.imshow("annot_image", annot_image)
+        # cv2.imshow("cubic_spline_image", cubic_spline_image)
+        # cv2.imshow("mono_spline_image", mono_spline_image)
+        # cv2.imshow("linear_intrp_image", linear_intrp_image)
+        cv2.imshow("quadratic_intrp_image", quadratic_intrp_image)
         cv2.waitKey(-1)
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':

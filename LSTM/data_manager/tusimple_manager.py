@@ -175,7 +175,11 @@ class Tusimple_Manager(object):
         # extract lanes
         for lane_idx, lane_x_points in enumerate(raw_data['lanes'], 0):
             vertices = list(filter(lambda xy_pair : xy_pair[0] > 0, zip(lane_x_points, raw_data['h_samples'])))
+
+            if len(vertices) == 0: continue
+
             vertices = np.array(vertices, dtype=np.float)
+
             lanes.append(np.flip(vertices, axis=0))
 
         return lanes
