@@ -184,6 +184,60 @@ class Tusimple_Manager(object):
 
         return lanes
 
+    def split_train_test(self, datas, test_size=5, seq_len=5):
+        # train_sets & test_sets
+        train_sets = []
+        test_sets = []
+
+        for data in datas:
+            # normalize
+            data[:, 0] /= 1280.0
+            data[:, 1] /= 720.0
+
+            train_size = len(data) - test_size
+
+            train_set = data[:train_size]
+            test_set = data[train_size-seq_len:]
+
+            train_sets.append(train_set)
+            test_sets.append(test_set)
+
+        return train_sets, test_sets
+
+    def make_sequence_data(self, data, seq_len = 5):
+        l = len(data)
+
+        data_x = []
+        data_y = []
+
+        for i in range(l-seq_len):
+            # y points -> x value
+            train_seq = data[i:i+seq_len, 1]
+            # x points -> y value
+            test_label = data[i+seq_len:i+seq_len+1, 0]
+
+            data_x.append(train_seq)
+            data_y.append(test_label)
+
+        return np.array(data_x), np.array(data_y)
+
+    def make_test_sequence_data(self, data, seq_len):
+        l = len(data)
+
+        data_x = []
+
+        for i in range(l-seq_len):
+            train_seq = data[i:i+seq_len]
+
+            data_x.append(train_seq)
+
+        return np.array(data_x, dtype=np.float)
+
+
+
+
+
+
 
 
 

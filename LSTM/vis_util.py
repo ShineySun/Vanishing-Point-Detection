@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
 
-color_ = [(255,0,0), (0,255,0), (0,0,255), (100,100,100), (200,120,80)]
-radius_ = 3
-thickness_ = 3
+color_ = [(255,0,0), (0,255,0), (0,0,255), (255,100,100), (200,120,80)]
+radius_ = 2
+thickness_ = 2
 
 def draw_points(img, lanes):
     for lane_idx, lane in enumerate(lanes):
