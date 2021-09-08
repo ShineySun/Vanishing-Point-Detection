@@ -1,0 +1,4 @@
+https://arxiv.org/pdf/1711.08588.pdf
+
+PINet의 마지막부분에서 예측한 point들을 차선으로 분리하기 위해 SGPN의 방식을 차용했다
+stacked hourglass 구조에서 뽑은 confidence, offset, embedding feature 세가지중 embedding feature를 이용해 instance segmentation을 수행한다
